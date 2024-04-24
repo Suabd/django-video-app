@@ -142,7 +142,29 @@ class TestVideoModel(TestCase):
 
          self.assertEqual(0, Video.objects.count())
 
-    def test_duplicate_video_raises_integrity_error(self):
+    def test_duplicate_video_raises_integrity_error(self): # this arises error when there is diplicate
         v1 = Video.objects.create(name='ZXY', notes='example', url='https://www.youtube.com/watch?v=123')
         with self.assertRaises(IntegrityError):
             Video.objects.create(name='ZXY', notes='example', url='https://www.youtube.com/watch?v=123')
+
+class testVidoDetai(TestCase):
+
+    def test_video_info(self):
+        # creats the list of the info of the video that we going to test
+        v1 = Video.objects.create(name='ZXY', notes='example', url='https://www.youtube.com/watch?v=123')
+
+        url = reverse('video_details', args=(1,))
+        response = self.client.get(url)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, v1.name)
+        self.assertContains(response, v1.notes)
+        self.assertContains(response, v1.url)
+
+    def test_request_non_existent_page_returns_404_status(self):
+
+        response = self.client.post(reverse('video_details', args=(200,)), follow=True)
+        self.assertEqual(404, response.status_code)
+
+
+    

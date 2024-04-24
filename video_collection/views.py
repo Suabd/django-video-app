@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
@@ -25,7 +25,7 @@ def add(request):
             except ValidationError:
                 messages.warning(request, 'Invalid YouTube URL')
             except IntegrityError:
-                messages.warning(request, 'You already added that video')
+                messages.warning(request, 'You already added that video') # this when yoy put the same video again
 
         # if the video is not save than we will get this warning.
         messages.warning(request, 'Please check the data entered.')
@@ -38,14 +38,19 @@ def add(request):
 # this shows the video list
 def video_list(request):
 
-    search_form = SearchForm(request.GET) # bild form from data user has sent to app
+    search_form = SearchForm(request.GET) # build form from data user has sent to app
 
-    if search_form.is_valid():
+    if search_form.is_valid():   # make sure it is valid
         search_term = search_form.cleaned_data['search_term']  # example: 'Relaxing' 
-        videos = Video.objects.filter(name__icontains=search_term).order_by(Lower('name'))
+        videos = Video.objects.filter(name__icontains=search_term).order_by(Lower('name')) # order by name
     
     else:  # form is not filed in or this is the first time user uses the page
         search_form = SearchForm()
         videos = Video.objects.order_by(Lower('name'))
     
     return render(request, 'video_collection/video_list.html', {'videos': videos, 'search_form': search_form})
+
+def video_details(request, video_pk): 
+    #uses video_pk as primary key of the db
+    video = get_object_or_404(Video, pk=video_pk)
+    return render(request, 'video_collection/video_details.html', {'video': video})
